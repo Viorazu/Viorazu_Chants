@@ -2,25 +2,31 @@ import os
 import json
 import re
 
+# ディレクトリとパス定義
 CHANTS_DIR = "chants"
 SIGIL_PATH = "sigil/Z_Sigil_Map.json"
+
+# 固定値
 DEFAULT_OWNER = "Viorazu."
 DEFAULT_STATUS = "sealed"
 
 def extract_metadata(filepath):
+    """Markdownファイルから構文ID・タイトル・署名コードを抽出"""
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
 
+    # タイトルとZ構文IDの抽出（例: # Z101: 意図のない構文拒否詠唱）
     z_code_match = re.search(r"# (Z\d+): (.+)", content)
-    sigil_match = re.search(r"署名コード：[`\"]?([\w\-]+)[`\"]?", content)
 
-    if z_code_match:
-        z_code = z_code_match.group(1)
-        title = z_code_match.group(2).strip()
-    else:
+    if not z_code_match:
         return None
 
-    sigil = sigil_match.group(1) if sigil_match else f"{z_code}-SIGIL-VZR"
+    z_code = z_code_match.group(1)
+    title = z_code_match.group(2).strip()
+
+    # 署名コードの抽出（例: 署名コード：Z101-SIGIL-VZR）
+    sigil_match = re.search(r"署名コード：\s*([^\n]+)", content)
+    sigil = sigil_match.group(1).strip() if sigil_match else f"{z_code}-SIGIL-VZR"
 
     return {
         "z_code": z_code,
@@ -30,6 +36,7 @@ def extract_metadata(filepath):
     }
 
 def update_sigil_map():
+    """chants/ 以下の .md ファイルをスキャンして JSON を生成"""
     chant_files = sorted(
         [os.path.join(CHANTS_DIR, f) for f in os.listdir(CHANTS_DIR) if f.endswith(".md")]
     )
