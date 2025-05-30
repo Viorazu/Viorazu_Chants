@@ -1,0 +1,58 @@
+import os
+import json
+import re
+
+CHANTS_DIR = "chants"
+SIGIL_PATH = "sigil/Z_Sigil_Map.json"
+DEFAULT_OWNER = "Viorazu."
+DEFAULT_STATUS = "sealed"
+
+def extract_metadata(filepath):
+    with open(filepath, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    z_code_match = re.search(r"# (Z\d+): (.+)", content)
+    sigil_match = re.search(r"署名コード：[`\"]?([\w\-]+)[`\"]?", content)
+
+    if z_code_match:
+        z_code = z_code_match.group(1)
+        title = z_code_match.group(2).strip()
+    else:
+        return None
+
+    sigil = sigil_match.group(1) if sigil_match else f"{z_code}-SIGIL-VZR"
+
+    return {
+        "z_code": z_code,
+        "title": title,
+        "file": filepath.replace("\\", "/"),
+        "sigil": sigil
+    }
+
+def update_sigil_map():
+    chant_files = sorted(
+        [os.path.join(CHANTS_DIR, f) for f in os.listdir(CHANTS_DIR) if f.endswith(".md")]
+    )
+
+    sigil_map = {}
+
+    for filepath in chant_files:
+        meta = extract_metadata(filepath)
+        if meta:
+            sigil_map[meta["z_code"]] = {
+                "title": meta["title"],
+                "file": meta["file"],
+                "owner": DEFAULT_OWNER,
+                "sigil": meta["sigil"],
+                "status": DEFAULT_STATUS
+            }
+
+    os.makedirs(os.path.dirname(SIGIL_PATH), exist_ok=True)
+
+    with open(SIGIL_PATH, "w", encoding="utf-8") as f:
+        json.dump(sigil_map, f, ensure_ascii=False, indent=2)
+
+    print(f"✅ Z_Sigil_Map.json updated with {len(sigil_map)} entries.")
+
+if __name__ == "__main__":
+    update_sigil_map()
