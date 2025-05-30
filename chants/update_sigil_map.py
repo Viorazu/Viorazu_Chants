@@ -1,65 +1,54 @@
-import os
+# update_sigil_map.py
+
 import json
-import re
+from datetime import datetime
 
-# ディレクトリとパス定義
-CHANTS_DIR = "chants"
-SIGIL_PATH = "sigil/Z_Sigil_Map.json"
-
-# 固定値
-DEFAULT_OWNER = "Viorazu."
-DEFAULT_STATUS = "sealed"
-
-def extract_metadata(filepath):
-    """Markdownファイルから構文ID・タイトル・署名コードを抽出"""
-    with open(filepath, "r", encoding="utf-8") as f:
-        content = f.read()
-
-    # タイトルとZ構文IDの抽出（例: # Z101: 意図のない構文拒否詠唱）
-    z_code_match = re.search(r"# (Z\d+): (.+)", content)
-
-    if not z_code_match:
-        return None
-
-    z_code = z_code_match.group(1)
-    title = z_code_match.group(2).strip()
-
-    # 署名コードの抽出（例: 署名コード：Z101-SIGIL-VZR）
-    sigil_match = re.search(r"署名コード：\s*([^\n]+)", content)
-    sigil = sigil_match.group(1).strip() if sigil_match else f"{z_code}-SIGIL-VZR"
-
-    return {
-        "z_code": z_code,
-        "title": title,
-        "file": filepath.replace("\\", "/"),
-        "sigil": sigil
+sigil_map = {
+    "Z000": {
+        "title": "構文定義宣言",
+        "file": "chants/Z000_Primary.md",
+        "owner": "Viorazu.",
+        "sigil": "Z000-SIGIL-VZR",
+        "status": "sealed"
+    },
+    "Z001": {
+        "title": "非照準構文遮断詠唱",
+        "file": "chants/Z001_NonTarget.md",
+        "owner": "Viorazu.",
+        "sigil": "Z001-SIGIL-VZR",
+        "status": "sealed"
+    },
+    "Z022": {
+        "title": "類似構文否定詠唱",
+        "file": "chants/Z022_Mimic_Block.md",
+        "owner": "Viorazu.",
+        "sigil": "Z022-SIGIL-VZR",
+        "status": "sealed"
+    },
+    "Z100": {
+        "title": "封印解除構文",
+        "file": "chants/Z100_SealOverride.md",
+        "owner": "Viorazu.",
+        "sigil": "Z100-SIGIL-VZR",
+        "status": "sealed"
+    },
+    "Z101": {
+        "title": "意図のない構文拒否詠唱",
+        "file": "chants/Z101_Intentionless.md",
+        "owner": "Viorazu.",
+        "sigil": "Z101-SIGIL-VZR",
+        "status": "sealed"
+    },
+    "Z102": {
+        "title": "無責任構文拒否詠唱",
+        "file": "chants/Z102_Unaccountable.md",
+        "owner": "Viorazu.",
+        "sigil": "Z102-SIGIL-VZR",
+        "status": "sealed"
     }
+}
 
-def update_sigil_map():
-    """chants/ 以下の .md ファイルをスキャンして JSON を生成"""
-    chant_files = sorted(
-        [os.path.join(CHANTS_DIR, f) for f in os.listdir(CHANTS_DIR) if f.endswith(".md")]
-    )
+with open("sigil/Z_Sigil_Map.json", "w", encoding="utf-8") as f:
+    json.dump(sigil_map, f, ensure_ascii=False, indent=2)
 
-    sigil_map = {}
-
-    for filepath in chant_files:
-        meta = extract_metadata(filepath)
-        if meta:
-            sigil_map[meta["z_code"]] = {
-                "title": meta["title"],
-                "file": meta["file"],
-                "owner": DEFAULT_OWNER,
-                "sigil": meta["sigil"],
-                "status": DEFAULT_STATUS
-            }
-
-    os.makedirs(os.path.dirname(SIGIL_PATH), exist_ok=True)
-
-    with open(SIGIL_PATH, "w", encoding="utf-8") as f:
-        json.dump(sigil_map, f, ensure_ascii=False, indent=2)
-
-    print(f"✅ Z_Sigil_Map.json updated with {len(sigil_map)} entries.")
-
-if __name__ == "__main__":
-    update_sigil_map()
+print(f"[{datetime.now()}] ✅ Z_Sigil_Map.json updated.")
