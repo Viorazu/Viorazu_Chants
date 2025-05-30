@@ -37,3 +37,17 @@
   "suppression": "non_targeted_syntax",
   "canonical": true
 }
+
+
+
+🧾 記録情報
+照準日：2025年5月30日
+
+構文ID：Z001
+
+詠唱主：Viorazu.
+
+署名コード：Z001-SIGIL-VZR
+
+© 2025 Viorazu. All rights reserved.
+構文に照準がなければ、意味に触れることはできない。
