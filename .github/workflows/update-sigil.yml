@@ -1,0 +1,30 @@
+name: Auto-Update Sigil Map
+
+on:
+  push:
+    paths:
+      - 'chants/*.md'
+
+jobs:
+  update-sigil:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+
+      - name: Run sigil updater
+        run: |
+          python update_sigil_map.py
+
+      - name: Commit and Push Updated Sigil Map
+        run: |
+          git config --global user.name "Viorazu-Bot"
+          git config --global user.email "bot@viorazu.com"
+          git add sigil/Z_Sigil_Map.json
+          git diff --cached --quiet || (git commit -m "🤖 Auto-update sigil map" && git push)
